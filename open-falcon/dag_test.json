@@ -1,0 +1,891 @@
+{
+  "psm": "videoarch_transcoder",
+  "job_id_to_name": {
+    "479": 546,
+    "792": 904,
+    "823": 936,
+    "842": 959,
+    "843": 960,
+    "984": 1115,
+    "985": 1252,
+    "1120": 1272,
+    "1121": 1273
+  },
+  "user_default_logos": {
+    "jinmiao":"jinmiao",
+    "cooperate":"cooperate",
+    "pgc":"xigua",
+    "xigua":"xigua",
+    "toutiao":"xigua",
+    "aweme_logo":"aweme",
+    "hotsoon_logo":"hotsoon",
+    "duanzi_crawl":"duanzi",
+    "duanzi":"duanzi",
+    "im_logo":"im",
+    "hypstar_logo":"hypstar",
+    "tiktok_logo":"tiktok"
+  },
+  "user_priority": [
+    [],
+    [ "motor", "flipagram", "dfic", "duanzi", "ugc","pgc", "ad", "adlanding", "fetool",
+      "chat", "im", "eyeu", "jinmiao", "xigua", "cooperate", "wenda", "pgc_open", "im_logo",
+      "aweme", "aweme_logo", "tiktok", "tiktok_logo", "hotsoon", "hotsoon_logo"],
+    ["crawl", "duanzi_crawl", "test", "test_cdn"]
+  ],
+  "clusters": {
+    "test": {
+      "envs": {
+        "tcron_jobid_rpc": "479",
+        "tcron_jobid": "479",
+        "tcron_cluster": "bob"
+      },
+      "quota_pct": [100, 100, 100],
+      "users": ["test", "test_cdn"]
+    },
+    "default": {
+      "envs": {
+        "tcron_jobid_rpc": "823",
+        "tcron_jobid": "792",
+        "tcron_cluster": "eve"
+      },
+      "quota_pct": [100, 100, 100],
+      "users": ["motor", "crawl", "flipagram", "duanzi_crawl", "dfic"]
+    },
+    "fernando": {
+      "envs": {
+        "tcron_jobid_rpc": "843",
+        "tcron_jobid": "842",
+        "tcron_cluster": "fernando"
+      },
+      "quota_pct": [100, 100, 100],
+      "users": ["duanzi", "ugc","pgc","ad", "adlanding", "fetool", "chat", "im", "eyeu", "jinmiao", "xigua", "cooperate", "wenda", "pgc_open", "im_logo"]
+    },
+    "grande": {
+      "envs": {
+        "tcron_jobid_rpc": "985",
+        "tcron_jobid": "984",
+        "tcron_cluster": "grande"
+      },
+      "quota_pct": [100, 80, 60],
+      "users": ["aweme", "aweme_logo","tiktok", "tiktok_logo"]
+    },
+    "icy": {
+      "envs": {
+        "tcron_jobid_rpc": "1121",
+        "tcron_jobid": "1120",
+        "tcron_cluster": "icy"
+      },
+      "quota_pct": [100, 70, 40],
+      "users": ["hotsoon", "hotsoon_logo"]
+    }
+  },
+  "tasks": {
+    "transcode_one_audio": {
+      "cn_name": "音频转码",
+      "type": "tcron",
+      "tcron_config": {
+        "name": "transcode_one_audio",
+        "version": "1",
+        "func_name": "transcode_one_audio",
+        "func_params": ["vid", "user"]
+      }
+    },
+    "transcode_filter_params_logo": {
+      "cn_name": "转码参数logo",
+      "type": "tcron",
+      "tcron_config": {
+        "name": "transcode_filter_params_logo",
+        "version": "1",
+        "func_name": "transcode_filter_params",
+        "func_params": ["vid", "add_logo"]
+      }
+    },
+    "transcode_filter_params": {
+      "cn_name": "转码参数",
+      "type": "tcron",
+      "tcron_config": {
+        "name": "transcode_filter_params",
+        "version": "1",
+        "func_name": "transcode_filter_params",
+        "func_params": ["vid"],
+        "envs": {
+          "add_logo": ""
+        }
+      }
+    },
+    "transcode_video_360p": {
+      "cn_name": "360p",
+      "type": "tcron",
+      "tcron_config": {
+        "name": "transcode_video_360p",
+        "version": "1",
+        "func_name": "transcode_video_res",
+        "func_params": ["vid", "res", "filter_param_json", "add_logo"],
+        "envs": {
+          "res": "360p"
+        }
+      }
+    },
+    "transcode_video_480p": {
+      "cn_name": "480p",
+      "type": "tcron",
+      "tcron_config": {
+        "name": "transcode_video_480p",
+        "version": "1",
+        "func_name": "transcode_video_res",
+        "func_params": ["vid", "res", "filter_param_json", "add_logo"],
+        "envs": {
+          "res": "480p"
+        }
+      }
+    },
+    "transcode_video_720p": {
+      "cn_name": "720p",
+      "type": "tcron",
+      "tcron_config": {
+        "name": "transcode_video_720p",
+        "version": "1",
+        "func_name": "transcode_video_res",
+        "func_params": ["vid", "res", "filter_param_json", "add_logo"],
+        "envs": {
+          "res": "720p"
+        }
+      }
+    },
+    "mark_transcode_failed": {
+      "cn_name": "转码失败",
+      "type": "tcron",
+      "tcron_config": {
+        "name": "update_video_transcode_status_failed",
+        "version": "1",
+        "func_name": "update_video_transcode_status",
+        "func_params": ["vid", "status"],
+        "envs": {
+          "tcron_job_type": "rpc",
+          "status": "EncodeFailed"
+        },
+        "trigger_rule": "one_failed"
+      }
+    },
+    "mark_transcode_success": {
+      "cn_name": "转码成功",
+      "type": "tcron",
+      "tcron_config": {
+        "name": "update_video_transcode_status_success",
+        "version": "1",
+        "func_name": "update_video_transcode_status",
+        "func_params": ["vid", "status"],
+        "envs": {
+          "tcron_job_type": "rpc",
+          "status": "EncodeSuccess"
+        }
+      }
+    },
+    "mark_transcode_success_one": {
+      "cn_name": "转码成功",
+      "type": "tcron",
+      "tcron_config": {
+        "name": "update_video_transcode_status_success_one",
+        "version": "1",
+        "func_name": "update_video_transcode_status",
+        "func_params": ["vid", "status"],
+        "trigger_rule": "one_success",
+        "envs": {
+          "tcron_job_type": "rpc",
+          "status": "EncodeSuccess"
+        }
+      }
+    },
+    "skip_video_transcode": {
+      "cn_name": "跳过转码",
+      "type": "tcron",
+      "tcron_config": {
+        "name": "skip_video_transcode",
+        "version": "1",
+        "func_name": "skip_video_transcode",
+        "func_params": ["vid"],
+        "envs" : {
+          "tcron_job_type": "rpc"
+        }
+      }
+    },
+    "snapshots_covers": {
+      "cn_name": "封面候选",
+      "type": "tcron",
+      "tcron_config": {
+        "name": "snapshots_covers",
+        "version": "1",
+        "func_name": "snapshots_covers",
+        "func_params": ["vid"],
+        "envs" : {
+          "tcron_job_type": "rpc"
+        }
+      }
+    },
+    "rpc_watermark_detect": {
+      "cn_name": "水印",
+      "type": "tcron",
+      "tcron_config": {
+        "name": "rpc_watermark_detect",
+        "version": "1",
+        "func_name": "rpc_watermark_detect",
+        "func_params": ["vid"],
+        "envs" : {
+          "tcron_job_type": "rpc"
+        }
+      }
+    },
+    "rpc_fp_watermark_detect": {
+      "cn_name": "水印",
+      "type": "tcron",
+      "tcron_config": {
+        "name": "rpc_fp_watermark_detect",
+        "version": "1",
+        "func_name": "rpc_fp_watermark_detect",
+        "func_params": ["vid"],
+        "envs" : {
+          "tcron_job_type": "rpc"
+        }
+      }
+    },
+    "rpc_smoking_detect": {
+      "cn_name": "抽烟",
+      "type": "tcron",
+      "tcron_config": {
+        "name": "rpc_smoking_detect",
+        "version": "1",
+        "func_name": "rpc_smoking_detect",
+        "func_params": ["vid"],
+        "envs" : {
+          "tcron_job_type": "rpc"
+        }
+      }
+    },
+    "snapshots_animated_image": {
+      "cn_name": "动图",
+      "type": "tcron",
+      "tcron_config": {
+        "name": "snapshots_animated_image",
+        "version": "1",
+        "func_name": "snapshots_animated_image",
+        "func_params": ["vid", "user"],
+        "envs" : {
+          "tcron_job_type": "rpc"
+        }
+      }
+    },
+    "snapshots_big_thumbnail_image": {
+      "cn_name": "缩略图",
+      "type": "tcron",
+      "tcron_config": {
+        "name": "snapshots_big_thumbnail_image",
+        "version": "1",
+        "func_name": "snapshots_big_thumbnail_image",
+        "func_params": ["vid"],
+        "envs" : {
+          "tcron_job_type": "rpc"
+        }
+      }
+    },
+    "scene_cut": {
+      "cn_name": "关键帧",
+      "type": "tcron",
+      "tcron_config": {
+        "name": "scene_cut",
+        "version": "1",
+        "func_name": "scene_cut",
+        "func_params": ["vid"],
+        "envs" : {
+          "tcron_job_type": "rpc"
+        }
+      }
+    },
+    "porn_detect": {
+      "cn_name": "鉴黄",
+      "type": "tcron",
+      "tcron_config": {
+        "name": "porn_detect",
+        "version": "1",
+        "func_name": "porn_detect",
+        "func_params": ["vid"],
+        "envs" : {
+          "tcron_job_type": "rpc"
+        }
+      }
+    },
+    "nausea_detect": {
+      "cn_name": "恶心",
+      "type": "tcron",
+      "tcron_config": {
+        "name": "nausea_detect",
+        "version": "1",
+        "func_name": "nausea_detect",
+        "func_params": ["vid"],
+        "envs" : {
+          "tcron_job_type": "rpc"
+        }
+      }
+    },
+    "audioad_detect": {
+      "cn_name": "语音广告",
+      "type": "tcron",
+      "tcron_config": {
+        "name": "audioad_detect",
+        "version": "1",
+        "func_name": "audioad_detect",
+        "func_params": ["vid"],
+        "envs" : {
+          "tcron_job_type": "rpc"
+        }
+      }
+    },
+    "audiomd_detect": {
+      "cn_name": "语音播报",
+      "type": "tcron",
+      "tcron_config": {
+        "name": "audiomd_detect",
+        "version": "1",
+        "func_name": "audiomd_detect",
+        "func_params": ["vid"],
+        "envs" : {
+          "tcron_job_type": "rpc"
+        }
+      }
+    },
+    "insight": {
+      "cn_name": "视频处理",
+      "type": "tcron",
+      "tcron_config": {
+        "name": "insight",
+        "version": "1",
+        "func_name": "insight",
+        "func_params": ["vid"],
+        "envs" : {
+          "tcron_job_type": "rpc"
+        }
+      }
+    },
+    "callback": {
+      "cn_name": "回调",
+      "type": "tcron",
+      "tcron_config": {
+        "name": "callback",
+        "version": "1",
+        "func_name": "callback",
+        "func_params": ["vid"],
+        "trigger_rule": "one_success",
+        "envs" : {
+          "tcron_job_type": "rpc"
+        }
+      }
+    }
+  },
+  "dags": [
+    {
+      "name": "audio",
+      "version": "1",
+      "description": "dag for audio",
+      "load": 4,
+      "tasks": [
+        "transcode_one_audio",
+        "mark_transcode_failed",
+        "mark_transcode_success",
+        "callback"
+      ],
+      "dependencies": [
+        {
+          "source": "transcode_one_audio",
+          "targets": ["mark_transcode_failed", "mark_transcode_success"],
+          "weights": 1
+        },
+        {
+          "source": "mark_transcode_failed",
+          "targets": ["callback"],
+          "weights": 2
+        },
+        {
+          "source": "mark_transcode_success",
+          "targets": ["callback"],
+          "weights": 2
+        }
+      ]
+    },
+    {
+      "name": "aweme",
+      "version": "1",
+      "description": "dag for aweme",
+      "load": 14,
+      "tasks": [
+        "scene_cut",
+        "rpc_watermark_detect",
+        "rpc_smoking_detect",
+        "snapshots_animated_image",
+        "audioad_detect",
+        "porn_detect",
+        "snapshots_covers",
+        "transcode_filter_params",
+        "transcode_video_360p",
+        "transcode_video_480p",
+        "transcode_video_720p",
+        "mark_transcode_failed",
+        "mark_transcode_success",
+        "callback"
+      ],
+      "dependencies": [
+        {
+          "source": "transcode_filter_params",
+          "targets": [
+            "transcode_video_360p",
+            "transcode_video_480p",
+            "transcode_video_720p",
+            "mark_transcode_failed"
+          ],
+          "weights": 1
+        },
+        {
+          "source": "transcode_video_360p",
+          "targets": ["mark_transcode_failed", "mark_transcode_success"],
+          "weights": 2
+        },
+        {
+          "source": "transcode_video_480p",
+          "targets": ["mark_transcode_failed", "mark_transcode_success"],
+          "weights": 2
+        },
+        {
+          "source": "transcode_video_720p",
+          "targets": ["mark_transcode_failed", "mark_transcode_success"],
+          "weights": 2
+        },
+        {
+          "source": "mark_transcode_failed",
+          "targets": ["callback"],
+          "weights": 3
+        },
+        {
+          "source": "mark_transcode_success",
+          "targets": ["callback"],
+          "weights": 3
+        }
+      ]
+    },
+    {
+      "name": "hotsoon",
+      "version": "1",
+      "description": "dag for hotsoon",
+      "load": 11,
+      "tasks": [
+        "scene_cut",
+        "rpc_watermark_detect",
+        "audioad_detect",
+        "porn_detect",
+        "transcode_filter_params_logo",
+        "transcode_video_360p",
+        "transcode_video_480p",
+        "transcode_video_720p",
+        "mark_transcode_failed",
+        "mark_transcode_success",
+        "callback"
+      ],
+      "dependencies": [
+        {
+          "source": "transcode_filter_params_logo",
+          "targets": [
+            "transcode_video_360p",
+            "transcode_video_480p",
+            "transcode_video_720p",
+            "mark_transcode_failed"
+          ],
+          "weights": 1
+        },
+        {
+          "source": "transcode_video_360p",
+          "targets": ["mark_transcode_failed", "mark_transcode_success"],
+          "weights": 2
+        },
+        {
+          "source": "transcode_video_480p",
+          "targets": ["mark_transcode_failed", "mark_transcode_success"],
+          "weights": 2
+        },
+        {
+          "source": "transcode_video_720p",
+          "targets": ["mark_transcode_failed", "mark_transcode_success"],
+          "weights": 2
+        },
+        {
+          "source": "mark_transcode_failed",
+          "targets": ["callback"],
+          "weights": 3
+        },
+        {
+          "source": "mark_transcode_success",
+          "targets": ["callback"],
+          "weights": 3
+        }
+      ]
+    },
+    {
+      "name": "duanzi",
+      "version": "1",
+      "description": "dag for duanzi",
+      "load": 11,
+      "tasks": [
+        "transcode_filter_params_logo",
+        "transcode_video_360p",
+        "transcode_video_480p",
+        "transcode_video_720p",
+        "scene_cut",
+        "rpc_watermark_detect",
+        "audioad_detect",
+        "porn_detect",
+        "mark_transcode_failed",
+        "mark_transcode_success",
+        "callback"
+      ],
+      "dependencies": [
+        {
+          "source": "transcode_filter_params_logo",
+          "targets": [
+            "transcode_video_360p",
+            "transcode_video_480p",
+            "transcode_video_720p",
+            "mark_transcode_failed"
+          ],
+          "weights": 1
+        },
+        {
+          "source": "transcode_video_360p",
+          "targets": ["mark_transcode_failed", "mark_transcode_success"],
+          "weights": 2
+        },
+        {
+          "source": "transcode_video_480p",
+          "targets": ["mark_transcode_failed", "mark_transcode_success"],
+          "weights": 2
+        },
+        {
+          "source": "transcode_video_720p",
+          "targets": ["mark_transcode_failed", "mark_transcode_success"],
+          "weights": 2
+        },
+        {
+          "source": "mark_transcode_failed",
+          "targets": ["callback"],
+          "weights": 3
+        },
+        {
+          "source": "mark_transcode_success",
+          "targets": ["callback"],
+          "weights": 3
+        }
+      ]
+    },
+    {
+      "name": "pgc",
+      "version": "1",
+      "description": "dag for pgc",
+      "load": 12,
+      "tasks": [
+        "transcode_filter_params_logo",
+        "transcode_video_360p",
+        "transcode_video_480p",
+        "transcode_video_720p",
+        "scene_cut",
+        "snapshots_covers",
+        "audioad_detect",
+        "audiomd_detect",
+        "porn_detect",
+        "mark_transcode_failed",
+        "mark_transcode_success",
+        "callback"
+      ],
+      "dependencies": [
+        {
+          "source": "transcode_filter_params_logo",
+          "targets": [
+            "transcode_video_360p",
+            "transcode_video_480p",
+            "transcode_video_720p",
+            "mark_transcode_failed"
+          ],
+          "weights": 1
+        },
+        {
+          "source": "transcode_video_360p",
+          "targets": ["mark_transcode_failed", "snapshots_covers"],
+          "weights": 2
+        },
+        {
+          "source": "transcode_video_480p",
+          "targets": ["mark_transcode_failed", "snapshots_covers"],
+          "weights": 2
+        },
+        {
+          "source": "transcode_video_720p",
+          "targets": ["mark_transcode_failed", "snapshots_covers"],
+          "weights": 2
+        },
+        {
+          "source": "mark_transcode_failed",
+          "targets": ["callback"],
+          "weights": 3
+        },
+        {
+          "source": "snapshots_covers",
+          "targets": ["mark_transcode_failed", "mark_transcode_success"],
+          "weights": 4
+        },
+        {
+          "source": "mark_transcode_success",
+          "targets": ["callback"],
+          "weights": 5
+        }
+      ]
+    },
+    {
+      "name": "encode_logo",
+      "version": "1",
+      "description": "dag only have logo encode",
+      "load": 7,
+      "tasks": [
+        "transcode_filter_params_logo",
+        "transcode_video_360p",
+        "transcode_video_480p",
+        "transcode_video_720p",
+        "mark_transcode_failed",
+        "mark_transcode_success",
+        "callback"
+      ],
+      "dependencies": [
+        {
+          "source": "transcode_filter_params_logo",
+          "targets": [
+            "transcode_video_360p",
+            "transcode_video_480p",
+            "transcode_video_720p",
+            "mark_transcode_failed"
+          ],
+          "weights": 1
+        },
+        {
+          "source": "transcode_video_360p",
+          "targets": ["mark_transcode_failed", "mark_transcode_success"],
+          "weights": 2
+        },
+        {
+          "source": "transcode_video_480p",
+          "targets": ["mark_transcode_failed", "mark_transcode_success"],
+          "weights": 2
+        },
+        {
+          "source": "transcode_video_720p",
+          "targets": ["mark_transcode_failed", "mark_transcode_success"],
+          "weights": 2
+        },
+        {
+          "source": "mark_transcode_failed",
+          "targets": ["callback"],
+          "weights": 3
+        },
+        {
+          "source": "mark_transcode_success",
+          "targets": ["callback"],
+          "weights": 3
+        }
+      ]
+    },
+    {
+      "name": "encode",
+      "version": "1",
+      "description": "dag only have encode",
+      "load": 8,
+      "tasks": [
+        "transcode_filter_params",
+        "snapshots_covers",
+        "transcode_video_360p",
+        "transcode_video_480p",
+        "transcode_video_720p",
+        "mark_transcode_failed",
+        "mark_transcode_success",
+        "callback"
+      ],
+      "dependencies": [
+        {
+          "source": "transcode_filter_params",
+          "targets": [
+            "transcode_video_360p",
+            "transcode_video_480p",
+            "transcode_video_720p",
+            "mark_transcode_failed"
+          ],
+          "weights": 1
+        },
+        {
+          "source": "transcode_video_360p",
+          "targets": ["mark_transcode_failed", "snapshots_covers"],
+          "weights": 2
+        },
+        {
+          "source": "transcode_video_480p",
+          "targets": ["mark_transcode_failed", "snapshots_covers"],
+          "weights": 2
+        },
+        {
+          "source": "transcode_video_720p",
+          "targets": ["mark_transcode_failed", "snapshots_covers"],
+          "weights": 2
+        },
+        {
+          "source": "mark_transcode_failed",
+          "targets": ["callback"],
+          "weights": 3
+        },
+        {
+          "source": "snapshots_covers",
+          "targets": ["mark_transcode_failed", "mark_transcode_success"],
+          "weights": 4
+        },
+        {
+          "source": "mark_transcode_success",
+          "targets": ["callback"],
+          "weights": 5
+        }
+        ]
+    },
+    {
+      "name": "im",
+      "version": "1",
+      "description": "dag for im",
+      "load": 4,
+      "tasks": [
+        "skip_video_transcode",
+        "mark_transcode_failed",
+        "mark_transcode_success",
+        "callback"
+      ],
+      "dependencies": [
+        {
+          "source": "skip_video_transcode",
+          "targets": ["mark_transcode_failed", "mark_transcode_success"],
+          "weight": 1
+        },
+        {
+          "source": "mark_transcode_success",
+          "targets": ["callback"],
+          "weight": 2
+        },
+        {
+          "source": "mark_transcode_failed",
+          "targets": ["callback"],
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "name": "flipagram",
+      "version": "1",
+      "description": "dag for flipagram",
+      "load": 7,
+      "tasks": [
+        "skip_video_transcode",
+        "scene_cut",
+        "porn_detect",
+        "rpc_fp_watermark_detect",
+        "mark_transcode_failed",
+        "mark_transcode_success",
+        "callback"
+      ],
+      "dependencies": [
+        {
+          "source": "skip_video_transcode",
+          "targets": ["mark_transcode_failed", "scene_cut", "porn_detect", "rpc_fp_watermark_detect"],
+          "weight": 1
+        },
+        {
+          "source": "scene_cut",
+          "targets": ["mark_transcode_failed", "mark_transcode_success"],
+          "weight": 2
+        },
+        {
+          "source": "porn_detect",
+          "targets": ["mark_transcode_failed", "mark_transcode_success"],
+          "weight": 2
+        },
+        {
+          "source": "rpc_fp_watermark_detect",
+          "targets": ["mark_transcode_failed", "mark_transcode_success"],
+          "weight": 2
+        },
+        {
+          "source": "mark_transcode_success",
+          "targets": ["callback"],
+          "weight": 3
+        },
+        {
+          "source": "mark_transcode_failed",
+          "targets": ["callback"],
+          "weight": 3
+        }
+      ]
+    },
+    {
+      "name": "test",
+      "version": "1",
+      "description": "dag for testing",
+      "load": 13,
+      "tasks": [
+        "transcode_filter_params",
+        "transcode_video_360p",
+        "transcode_video_480p",
+        "transcode_video_720p",
+        "mark_transcode_failed",
+        "mark_transcode_success",
+        "snapshots_covers",
+        "rpc_watermark_detect",
+        "rpc_smoking_detect",
+        "snapshots_animated_image",
+        "snapshots_big_thumbnail_image",
+        "insight",
+        "callback"
+      ],
+      "dependencies": [
+        {
+          "source": "transcode_filter_params",
+          "targets": [
+            "transcode_video_360p",
+            "transcode_video_480p",
+            "transcode_video_720p",
+            "mark_transcode_failed"
+          ],
+          "weights": 1
+        },
+        {
+          "source": "transcode_video_360p",
+          "targets": ["mark_transcode_failed", "mark_transcode_success"],
+          "weights": 2
+        },
+        {
+          "source": "transcode_video_480p",
+          "targets": ["mark_transcode_failed", "mark_transcode_success"],
+          "weights": 2
+        },
+        {
+          "source": "transcode_video_720p",
+          "targets": ["mark_transcode_failed", "mark_transcode_success"],
+          "weights": 2
+        },
+        {
+          "source": "mark_transcode_success",
+          "targets": ["callback"],
+          "weights": 3
+        },
+        {
+          "source": "mark_transcode_failed",
+          "targets": ["callback"],
+          "weights": 3
+        }
+      ]
+    }
+  ]
+}
